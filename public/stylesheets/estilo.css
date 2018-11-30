@@ -1,0 +1,22 @@
+a,
+a:hover {
+    text-decoration: none;
+    color: #363636;
+}
+.container-fluid {
+    margin-top: 15px;
+}
+
+.btn {
+    border-width: 2px;
+    border-color: #f0f0f0;
+    box-shadow: unset !important;
+}
+
+.btn.active {
+    border-color: #958c94;
+}
+
+.categoria {
+    cursor: pointer;
+}

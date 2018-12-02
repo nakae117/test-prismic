@@ -18,52 +18,74 @@ use Prismic\Predicates;
 
 require_once 'includes/http.php';
 
-/*
- *  --[ INSERT YOUR ROUTES HERE ]--
- */
-
-// Previews
-$app->get('/preview', function ($request, $response) use ($app, $prismic) {
-    $token = $request->getParam('token');
-    $url = $prismic->get_api()->previewSession($token, $prismic->linkResolver, '/');
-    setcookie(Prismic\PREVIEW_COOKIE, $token, time() + 1800, '/', null, false, false);
-    return $response->withStatus(302)->withHeader('Location', $url);
-});
-
-// Home page
-$app->get('/home', function ($request, $response) use ($app, $prismic) {
-    render($app, 'home');
-});
-
 /**
- * Prueba inicial con el api de Prismic, aunque seguí la documentación no logré conectar con la plataforma.
+ * Maqueta de la prueba dos con el api de Prismic.
  */
-$app->get('/quickstart-prismic', function ($request, $response, $args) use ($app, $prismic) {
-    // Query the API
+$app->get('/', function ($request, $response, $args) use ($app, $prismic) {
+    // Inicializa el API de Prismic.
     $api = $prismic->get_api();
-    $document = $api->getByUID('page', 'quickstart');
+    // Consulta de todos los items.
+    $response = $api->query('');
 
     // Render the page
-    render($app, 'index', array('document' => $document));
+    render($app, 'index', array('items' => $response->results));
 });
 
 /**
- * Maqueta de la prueba dos.
+ * Filtro de los items en Prismic
  */
-$app->get('/', function ($request, $response) use ($app, $prismic) {
-    render($app, 'maqueta');
+$app->get('/filtro/{categoria}', function ($request, $response, $params) use ($app, $prismic) {
+    // Inicializa el API de Prismic.
+    $api = $prismic->get_api();
+    // Comprueba si ha seleccionado una categoria.
+    if($params['categoria'] != 'Todos'){
+        // Consulta de los items por categoria.
+        $response = $api->query(
+            Predicates::at('document.tags', [$params['categoria']]),
+            ['pageSize' => 50]
+        );
+    } else {
+        // Consulta de todos los items.
+        $response = $api->query('');
+    }
+    /**
+     * Inicializa donde se almacenará los items.
+     */
+    $items = array();
+    foreach ($response->results as $key => $item) {
+        /**
+         * Agregar cada item a la lista.
+         */
+        $itemPush = array(
+                'id' => $item->id,
+                'img' => isset($item->data->image->url) ? $item->data->image->url : '/images/star.png',
+                'name' => $item->data->title[0]->text,
+                'category' => $item->tags,
+                'description' => $item->data->description[0]->text
+            );
+        array_push($items, $itemPush);
+    }
+    /**
+     * Retorna un JSON con la lista de items filtrados.
+     */
+    echo $json = json_encode($items);
 });
 
 /**
  * Mostrar un item.
  */
-$app->get('/item/{id}', function ($request, $response, $id) use ($app, $prismic) {
-    // Obtenemos los items del json.
-    $string = file_get_contents("../public/items.json");
-    // Convertimos los datos a un Array.
-    $json = json_decode($string, true);
-    // Obtenemos el item a mostrar.
-    $item = $json[$id['id']-1];
+$app->get('/item/{id}', function ($request, $response, $params) use ($app, $prismic) {
+    // Inicializa el API de Prismic.
+    $api = $prismic->get_api();
+    // Realiza la consulta de un item.
+    $query = $api->getByID($params['id']);
+    $item = array(
+        'id' => $query->id,
+        'img' => isset($query->data->image->url) ? $query->data->image->url : '/images/star.png',
+        'name' => $query->data->title[0]->text,
+        'category' => $query->tags,
+        'description' => $query->data->description[0]->text
+    );
     render($app, 'item', array('item' => $item));
 });
 

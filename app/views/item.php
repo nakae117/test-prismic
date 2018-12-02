@@ -13,7 +13,14 @@ $item = $WPGLOBAL['item'];
                 </div>
                 <div>
                     <p>
-                        <strong>Categorias:</strong> <?= $item['category'] ?>
+                        <strong>Categorias:</strong>&nbsp;
+                        <?php
+                            foreach($item['category'] as $key => $tag){
+                                if($key)
+                                    echo ', ';
+                                echo $tag;
+                            }
+                        ?>
                     </p>
                     <strong>Descripción:</strong>
                     <p>

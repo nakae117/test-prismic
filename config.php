@@ -9,7 +9,7 @@
 /*
  * Change this for the URL of your repository
  */
-define('PRISMIC_URL', 'https://prueba-cms.prismic.io/api/v2');
+define('PRISMIC_URL', 'https://prismacms.prismic.io/api/v2');
 define('PRISMIC_TOKEN', null);
 
 /*
